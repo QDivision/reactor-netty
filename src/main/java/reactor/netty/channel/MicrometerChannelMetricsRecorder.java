@@ -60,7 +60,7 @@ public class MicrometerChannelMetricsRecorder implements ChannelMetricsRecorder 
 	final ConcurrentMap<MeterKey, Timer> addressResolverTimeCache = PlatformDependent.newConcurrentHashMap();
 
 
-	public MicrometerChannelMetricsRecorder(String name, String protocol) {
+	protected MicrometerChannelMetricsRecorder(String name, String protocol) {
 		this.dataReceivedBuilder =
 				DistributionSummary.builder(name + DATA_RECEIVED)
 				                   .baseUnit("bytes")
