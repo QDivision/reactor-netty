@@ -16,9 +16,7 @@
 
 package reactor.netty.http.client;
 
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -407,7 +405,7 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 				uri = new URI(url);
 			}
 			else {
-				String host = requestHeaders().get(HttpHeaderNames.HOST);
+        String host = getWebsocketHost();
 				uri = new URI((isSecure ? HttpClient.WSS_SCHEME :
 				                          HttpClient.WS_SCHEME) + "://" + host + (url.startsWith("/") ? url : "/" + url));
 			}
@@ -418,6 +416,13 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 		return uri;
 	}
 
+  private String getWebsocketHost() {
+    SocketAddress socketAddress = channel().remoteAddress();
+    if(socketAddress instanceof InetSocketAddress) {
+      return ((InetSocketAddress) socketAddress).getHostName();
+    }
+    return requestHeaders().get(HttpHeaderNames.HOST);
+  }
 
 	@Override
 	public HttpResponseStatus status() {
@@ -671,6 +676,7 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 				                WebSocketClientCompressionHandler.INSTANCE);
 			}
 
+      log.debug(String.format("Attempting to perform websocket handshake with %s", url));
 			WebsocketClientOperations ops = new WebsocketClientOperations(url, protocols, maxFramePayloadLength, proxyPing, this);
 
 			if(!rebind(ops)) {
